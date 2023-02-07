@@ -10,7 +10,7 @@ import "../src/UsdcVault.sol";
 contract UsdcVaultTest is Test {
     address private immutable depositor = vm.addr(0x1);
 
-    DonUsdcVault private donUsdcVault;
+    UsdcVault private usdcVault;
 
     ERC20 private USDC = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     CErc20 private cUSDC = CErc20(0x39AA39c021dfbaE8faC545936693aC917d5E7563);
@@ -19,13 +19,13 @@ contract UsdcVaultTest is Test {
         Comptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
 
     function setUp() public {
-        donUsdcVault = new UsdcVault(
+        usdcVault = new UsdcVault(
             USDC,
             cUSDC,
             COMP,
             comptroller,
-            "DonUsdcVault",
-            "DUSDC"
+            "UsdcVault",
+            "VUSDC"
         );
     }
 
@@ -34,17 +34,17 @@ contract UsdcVaultTest is Test {
         deal(address(USDC), depositor, amount);
 
         vm.startPrank(address(depositor));
-        USDC.approve(address(donUsdcVault), type(uint256).max);
+        USDC.approve(address(usdcVault), type(uint256).max);
 
         uint256 exchangeRateMantissa = cUSDC.exchangeRateCurrent();
         uint256 sharesToBeReceived = ((amount * 1e18) / (exchangeRateMantissa));
 
-        donUsdcVault.deposit(amount);
+        usdcVault.deposit(amount);
         vm.stopPrank();
 
-        assertEq(donUsdcVault.balanceOf(depositor), sharesToBeReceived);
-        assertEq(USDC.balanceOf(address(donUsdcVault)), 0);
-        assertEq(cUSDC.balanceOf(address(donUsdcVault)), sharesToBeReceived);
+        assertEq(usdcVault.balanceOf(depositor), sharesToBeReceived);
+        assertEq(USDC.balanceOf(address(usdcVault)), 0);
+        assertEq(cUSDC.balanceOf(address(usdcVault)), sharesToBeReceived);
     }
 
     function testDepositForZeroAmountReverts() public {
@@ -53,11 +53,11 @@ contract UsdcVaultTest is Test {
         vm.expectRevert(
             bytes(
                 abi.encodeWithSelector(
-                    DonUsdcVault.AmountBelowOrEqualZero.selector
+                    UsdcVault.AmountBelowOrEqualZero.selector
                 )
             )
         );
-        donUsdcVault.deposit(0);
+        usdcVault.deposit(0);
         vm.stopPrank();
     }
 
@@ -66,11 +66,11 @@ contract UsdcVaultTest is Test {
         deal(address(USDC), depositor, amount);
 
         vm.startPrank(address(depositor));
-        USDC.approve(address(donUsdcVault), amount - 1);
+        USDC.approve(address(usdcVault), amount - 1);
         vm.expectRevert(
-            bytes(abi.encodeWithSelector(DonUsdcVault.AllowanceNotMet.selector))
+            bytes(abi.encodeWithSelector(UsdcVault.AllowanceNotMet.selector))
         );
-        donUsdcVault.deposit(amount);
+        usdcVault.deposit(amount);
         vm.stopPrank();
     }
 
@@ -79,16 +79,16 @@ contract UsdcVaultTest is Test {
         deal(address(USDC), depositor, amount);
 
         vm.startPrank(address(depositor));
-        USDC.approve(address(donUsdcVault), type(uint256).max);
-        donUsdcVault.deposit(amount);
+        USDC.approve(address(usdcVault), type(uint256).max);
+        usdcVault.deposit(amount);
         vm.roll(block.number + 1000);
 
-        uint256 totalShares = donUsdcVault.balanceOf(depositor);
-        donUsdcVault.withdraw(totalShares);
+        uint256 totalShares = usdcVault.balanceOf(depositor);
+        usdcVault.withdraw(totalShares);
         vm.stopPrank();
 
-        assertEq(donUsdcVault.balanceOf(depositor), 0);
-        assertEq(cUSDC.balanceOf(address(donUsdcVault)), 0);
+        assertEq(usdcVault.balanceOf(depositor), 0);
+        assertEq(cUSDC.balanceOf(address(usdcVault)), 0);
         assertGe(USDC.balanceOf(depositor), amount);
     }
 
@@ -97,11 +97,11 @@ contract UsdcVaultTest is Test {
         vm.expectRevert(
             bytes(
                 abi.encodeWithSelector(
-                    DonUsdcVault.AmountBelowOrEqualZero.selector
+                    UsdcVault.AmountBelowOrEqualZero.selector
                 )
             )
         );
-        donUsdcVault.withdraw(0);
+        usdcVault.withdraw(0);
         vm.stopPrank();
     }
 
@@ -110,16 +110,16 @@ contract UsdcVaultTest is Test {
         deal(address(USDC), depositor, amount);
 
         vm.startPrank(address(depositor));
-        USDC.approve(address(donUsdcVault), type(uint256).max);
-        donUsdcVault.deposit(amount);
+        USDC.approve(address(usdcVault), type(uint256).max);
+        usdcVault.deposit(amount);
         vm.roll(block.number + 1000);
 
-        uint256 totalShares = donUsdcVault.balanceOf(depositor);
+        uint256 totalShares = usdcVault.balanceOf(depositor);
 
         vm.expectRevert(
-            bytes(abi.encodeWithSelector(DonUsdcVault.NotEnoughShares.selector))
+            bytes(abi.encodeWithSelector(UsdcVault.NotEnoughShares.selector))
         );
-        donUsdcVault.withdraw(totalShares + 1);
+        usdcVault.withdraw(totalShares + 1);
         vm.stopPrank();
     }
 
@@ -128,15 +128,15 @@ contract UsdcVaultTest is Test {
         deal(address(USDC), depositor, amount);
 
         vm.startPrank(address(depositor));
-        USDC.approve(address(donUsdcVault), type(uint256).max);
-        donUsdcVault.deposit(amount);
+        USDC.approve(address(usdcVault), type(uint256).max);
+        usdcVault.deposit(amount);
         vm.roll(block.number + 100);
 
-        uint256 totalShares = donUsdcVault.balanceOf(depositor);
-        donUsdcVault.withdraw(totalShares);
+        uint256 totalShares = usdcVault.balanceOf(depositor);
+        usdcVault.withdraw(totalShares);
         vm.stopPrank();
 
-        donUsdcVault.withdrawRewards();
+        usdcVault.withdrawRewards();
         assertGt(COMP.balanceOf(address(this)), 1);
     }
 
@@ -145,14 +145,14 @@ contract UsdcVaultTest is Test {
         deal(address(USDC), depositor, amount);
 
         vm.startPrank(address(depositor));
-        USDC.approve(address(donUsdcVault), type(uint256).max);
-        donUsdcVault.deposit(amount);
+        USDC.approve(address(usdcVault), type(uint256).max);
+        usdcVault.deposit(amount);
         vm.roll(block.number + 10000);
 
-        uint256 totalShares = donUsdcVault.balanceOf(depositor);
-        donUsdcVault.withdraw(totalShares);
+        uint256 totalShares = usdcVault.balanceOf(depositor);
+        usdcVault.withdraw(totalShares);
 
         vm.expectRevert();
-        donUsdcVault.withdrawRewards();
+        usdcVault.withdrawRewards();
     }
 }

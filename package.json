@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "build": "forge build",
+    "forkTest": "source .env && forge test -vvv --fork-url $ETH_RPC_URL"
+  },
   "devDependencies": {
     "prettier": "^2.8.3",
     "prettier-plugin-solidity": "^1.1.1",
