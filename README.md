@@ -1,4 +1,4 @@
-# NFT Marketplace Smart Contracts
+# Compound USDC Proxy Vault Smart Contracts
 Compound USDC proxy vault smart contracts. Built for demonstration purposes. Use it as a starting point for your own vault development.
 
 ### Development
