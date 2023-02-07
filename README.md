@@ -1,5 +1,5 @@
 # NFT Marketplace Smart Contracts
-NFT marketplace smart contracts. Built for demonstration purposes. Use it as a starting point for your own NFT marketplace.
+Compound USDC proxy vault smart contracts. Built for demonstration purposes. Use it as a starting point for your own vault development.
 
 ### Development
 
